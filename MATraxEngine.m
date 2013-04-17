@@ -15,12 +15,15 @@ classdef MATraxEngine < handle
     %% MATraxEngine Constructor
     function this = MATraxEngine(gui)
       this.gui = gui;
+      disp('MATrax Engine Loaded');
     end
 
     %% Callback methods
     function loadLibrary(this)
       this.libDir = uigetdir(pwd(), 'Open Directory Containing Tracks');
-      fprintf('Library loaded: %s\n', this.libDir);
+      if ischar(this.libDir) && exist(this.libDir, 'dir')
+        fprintf('Library loaded: %s\n', this.libDir);
+      end
     end
   end
 end
