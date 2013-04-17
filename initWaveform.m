@@ -10,11 +10,13 @@ function player = initWaveform(phandle, file)
     player = audioplayer(Y, Fs);
 
     monoY = (Y(:,1) + Y(:,2)) / 2;
-    wave = plot(phandle, monoY, 'g');
+    wave = line(0:(length(monoY)-1), monoY, 'Parent', phandle, 'Color', 'g');
     set(phandle,...
         'XLim', [0 length(monoY)-1],...
         'YLim', [-1.1 1.1]);
     player.TimerFcn = {@(src, event) shiftXLim(player, phandle, length(monoY))};
+
+    set(phandle,'ButtonDownFcn',@(src, event) toggle(player));
   end
 
   stylize(phandle);
@@ -32,4 +34,14 @@ end
 
 function shiftXLim(player, phandle, numSamples)
   set(phandle, 'XLim', [0 numSamples] + player.CurrentSample);
+end
+
+function toggle(player)
+  if player.isplaying()
+    pause(player);
+    Console.log('Paused');
+  else
+    play(player);
+    Console.log('Playing');
+  end
 end
