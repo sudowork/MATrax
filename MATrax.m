@@ -56,7 +56,7 @@ classdef MATrax < handle
       this.comps('deckB') = deckB;
       % bottom
       bot = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .01 .98 .485]);
-      colNames = {'Title' 'Artist' 'Album' 'Time' 'Path'};
+      colNames = {'Title' 'Artist' 'Time' 'Path'};
       songlib = uitable('parent', bot,...
               'ColumnName', colNames,...
               'ColumnWidth', 'auto',...
@@ -90,7 +90,7 @@ classdef MATrax < handle
           songData(i,:) = struct2cell(s);
         end
         set(songlib, 'Data', songData);
-        set(songlib, 'ColumnWidth', calcColWidth(songData, [128 64 64 32 32]));
+        set(songlib, 'ColumnWidth', calcColWidth(songData, [128 64 64 32]));
       end
     end
 
