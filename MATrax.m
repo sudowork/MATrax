@@ -87,9 +87,10 @@ classdef MATrax < handle
         songData = cell(length(songs), numCols);
         for i = 1:length(songs)
           s = songs(i);
-          songData(i,:) = struct2cell(s);%{s.title s.artist s.album s.time s.path};
+          songData(i,:) = struct2cell(s);
         end
-        set(this.comps('songlib'), 'Data', songData);
+        set(songlib, 'Data', songData);
+        set(songlib, 'ColumnWidth', calcColWidth(songData, [128 64 64 32 32]));
       end
     end
 
@@ -108,9 +109,15 @@ classdef MATrax < handle
   methods (Static)
     %% MATrax Constructor
     function obj = MATrax()
-      obj.comps = containers.Map();
+      % Add path if not stand-alone
+      if ~isdeployed
+        addpath(fullfile(pwd(), 'util'));
+      end
+
       % Create new MATraxEngine
       obj.eng = MATraxEngine();
+      % Init map for ui components
+      obj.comps = containers.Map();
       % Set up GUI
       initGUI(obj);
       addMenus(obj);
