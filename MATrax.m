@@ -5,7 +5,7 @@ classdef MATrax < handle
 %
 % Author: Kevin Gao
 % Usage: call `MATrax` to start application and initialize the GUI
-% See Also: MATRAXENGINE
+% See Also: MATRAXENGINE, INITWAVEFORM
   %% Properties
   properties (Constant)
     GUI_NAME = 'MATrax';
@@ -49,8 +49,10 @@ classdef MATrax < handle
       this.comps('root') = root;
       % top
       top = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .495 .98 .485]);
-      deckA = uicontrol('parent', top, 'string', 'Deck A');
-      deckB = uicontrol('parent', top, 'string', 'Deck B');
+      deckA.plot = axes('parent', top);
+      initWaveform(deckA.plot);
+      deckB.plot = axes('parent', top);
+      initWaveform(deckB.plot);
       this.comps('top') = top;
       this.comps('deckA') = deckA;
       this.comps('deckB') = deckB;
@@ -90,7 +92,11 @@ classdef MATrax < handle
           songData(i,:) = struct2cell(s);
         end
         set(songlib, 'Data', songData);
-        set(songlib, 'ColumnWidth', calcColWidth(songData, [128 64 64 48 32]));
+        set(songlib, 'ColumnWidth', calcColWidth(songData, [128 64 64 32 32]));
+
+        % TODO: remove this (just for testing)
+        initWaveform(this.comps('deckA').plot, songs(1).file);
+        initWaveform(this.comps('deckB').plot, songs(2).file);
       end
     end
 
