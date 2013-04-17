@@ -66,8 +66,8 @@ classdef MATrax < handle
       % top (waveforms + effects)
       top = c('top');
       deckA.plot = axes('parent', top);
-      initWaveform(deckA.plot);
       deckB.plot = axes('parent', top);
+      initWaveform(deckA.plot);
       initWaveform(deckB.plot);
 
       % mid (controls)
@@ -92,12 +92,23 @@ classdef MATrax < handle
     end
 
     function setupCallbacks(this)
-      c = this.comps;
       % TODO: refactor all the deck A/B stuff into one common bootstrapping process
+      function tempA(~,~)
+        temp = this.eng.loadDeckA('./library/01.mp3');
+        initWaveform(deckA.plot, temp);
+      end
+      function tempB(~,~)
+        temp = this.eng.loadDeckB('./library/02.mp3');
+        initWaveform(deckB.plot, temp);
+      end
+
+      c = this.comps;
       deckA = c('deckA');
       deckB = c('deckB');
       set(deckA.toggle, 'Callback', {@(src, event) this.eng.toggleDeckA(get(src, 'Value'))})
       set(deckB.toggle, 'Callback', {@(src, event) this.eng.toggleDeckB(get(src, 'Value'))})
+      set(deckA.load, 'Callback', @tempA);
+      set(deckB.load, 'Callback', @tempB);
     end
 
     function displayGUI(this)
@@ -121,10 +132,6 @@ classdef MATrax < handle
         end
         set(songlib, 'Data', songData);
         set(songlib, 'ColumnWidth', calcColWidth(songData, [128 64 64 32 32]));
-
-        % TODO: remove this (just for testing)
-        this.eng.loadDeckA(songs(1).file);
-        this.eng.loadDeckB(songs(2).file);
       end
     end
 

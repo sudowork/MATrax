@@ -63,12 +63,14 @@ classdef MATraxEngine < handle
       end
     end
 
-    function loadDeckA(this, file)
-      this.deckA = MATraxEngine.loadDeckFromFile(file);
+    function deck = loadDeckA(this, file)
+      deck = MATraxEngine.loadDeckFromFile(file);
+      this.deckA = deck;
     end
 
-    function loadDeckB(this, file)
-      this.deckB = MATraxEngine.loadDeckFromFile(file);
+    function deck = loadDeckB(this, file)
+      deck = MATraxEngine.loadDeckFromFile(file);
+      this.deckB = deck;
     end
 
     function toggleDeckA(this, currstate)
