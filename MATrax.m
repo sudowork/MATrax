@@ -16,6 +16,7 @@ classdef MATrax < handle
   properties (Access=private)
     f       % figure containing GUI
     eng     % engine for actually processing music
+    comps   % map of ui components
   end
 
   methods (Access=private)
@@ -42,6 +43,25 @@ classdef MATrax < handle
     end
 
     function addComponents(this)
+      % Construct layout
+      root = uiflowcontainer('v0', 'Units', 'norm', 'Position', [.01 .01 .98 .98]);
+      set(root, 'FlowDirection', 'TopDown');
+      this.comps('root') = root;
+      % top
+      top = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .495 .98 .485]);
+      deckA = uicontrol('parent', top, 'string', 'Deck A');
+      deckB = uicontrol('parent', top, 'string', 'Deck B');
+      this.comps('top') = top;
+      this.comps('deckA') = deckA;
+      this.comps('deckB') = deckB;
+      % bottom
+      bot = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .01 .98 .485]);
+      colNames = {'Title' 'Artist' 'Album' 'Time' 'Path'};
+      songlib = uitable('parent', bot,...
+              'ColumnName', colNames,...
+              'ColumnWidth', 'auto',...
+              'Data', {'' '' '' ''});
+      this.comps('songlib') = songlib;
     end
 
     function initComponents(this)
@@ -78,6 +98,7 @@ classdef MATrax < handle
   methods (Static)
     %% MATrax Constructor
     function obj = MATrax()
+      obj.comps = containers.Map();
       % Create new MATraxEngine
       obj.eng = MATraxEngine();
       % Set up GUI
