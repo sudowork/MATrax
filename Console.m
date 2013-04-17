@@ -10,7 +10,7 @@ classdef Console < handle
   methods (Static)
     function log(msg)
       % TODO: Create separate GUI window to log
-      disp(msg);
+      fprintf('[%s] %s\n', datestr(clock, 0), msg);
     end
   end
 end
