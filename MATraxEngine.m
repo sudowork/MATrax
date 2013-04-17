@@ -12,12 +12,16 @@ classdef MATraxEngine < handle
   end
   properties (SetAccess='private', GetAccess='public')
     songs   % dynamically sized array containing paths to songs
+    deckA   % in the form of {data: [Y, FS], player: audioplayer}
+    deckB   % in the form of {data: [Y, FS], player: audioplayer}
   end
 
   methods
     %% MATraxEngine Constructor
     function this = MATraxEngine()
       this.songs = [];
+      this.deckA = false;
+      this.deckB = false;
       Console.log('MATrax Engine Loaded');
     end
 
@@ -56,6 +60,44 @@ classdef MATraxEngine < handle
         success = true;
       else
         success = false;
+      end
+    end
+
+    function loadDeckA(this, file)
+      this.deckA = MATraxEngine.loadDeckFromFile(file);
+    end
+
+    function loadDeckB(this, file)
+      this.deckB = MATraxEngine.loadDeckFromFile(file);
+    end
+
+    function toggleDeckA(this, currstate)
+      MATraxEngine.togglePlayer(this.deckA.player, currstate);
+    end
+
+    function toggleDeckB(this, currstate)
+      MATraxEngine.togglePlayer(this.deckB.player, currstate);
+    end
+  end
+
+  methods (Static)
+    function deck = loadDeckFromFile(file)
+      deck.file = file;
+      [deck.Y, deck.Fs] = audioread(file);
+      deck.player = audioplayer(deck.Y, deck.Fs);
+    end
+
+    function togglePlayer(player, currstate)
+      if currstate
+        if get(player, 'CurrentSample')
+          player.resume
+        else
+          player.play;
+        end
+        Console.log('Playing');
+      else
+        player.pause;
+        Console.log('Paused');
       end
     end
   end

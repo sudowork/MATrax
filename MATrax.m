@@ -42,34 +42,62 @@ classdef MATrax < handle
                     'Callback', {@(src, event) this.quit()});
     end
 
-    function addComponents(this)
-      % Construct layout
-      root = uiflowcontainer('v0', 'Units', 'norm', 'Position', [.01 .01 .98 .98]);
-      set(root, 'FlowDirection', 'TopDown');
+    function setLayout(this)
+      root = uigridcontainer('v0', this.f, 'Units', 'norm', 'Position', [.01 .01 .98 .98]);
+      set(root, 'GridSize', [3, 1], 'VerticalWeight', [3 1 3]);
+
+      top = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .59 .98 .40]);
+
+      mid = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .42 .98 .16]);
+      ctlA = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.01 .01 .59 .98]);
+      ctlB = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.01 .01 .59 .98]);
+
+      bot = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .01 .98 .40]);
+
       this.comps('root') = root;
-      % top
-      top = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .495 .98 .485]);
+      this.comps('top') = top;
+      this.comps('ctlA') = ctlA;
+      this.comps('ctlB') = ctlB;
+      this.comps('bot') = bot;
+    end
+
+    function addComponents(this)
+      c = this.comps;
+      % top (waveforms + effects)
+      top = c('top');
       deckA.plot = axes('parent', top);
       initWaveform(deckA.plot);
       deckB.plot = axes('parent', top);
       initWaveform(deckB.plot);
-      this.comps('top') = top;
-      this.comps('deckA') = deckA;
-      this.comps('deckB') = deckB;
-      % bottom
-      bot = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .01 .98 .485]);
+
+      % mid (controls)
+      ctlA = c('ctlA');
+      ctlB = c('ctlB');
+      deckA.toggle = uicontrol('parent', ctlA, 'Style', 'togglebutton', 'string', 'Play/Pause A', 'Position', [0 0 60 20]);
+      deckA.load = uicontrol('parent', ctlA, 'string', 'Move to Deck A', 'Position', [0 0 60 20]);
+      deckB.load = uicontrol('parent', ctlB, 'string', 'Move to Deck B', 'Position', [0 0 60 20]);
+      deckB.toggle = uicontrol('parent', ctlB, 'Style', 'togglebutton', 'string', 'Play/Pause B', 'Position', [0 0 60 20]);
+
+      % bot (library))
+      bot = c('bot');
       colNames = {'Title' 'Artist' 'Time' 'Bitrate' 'Path'};
       songlib = uitable('parent', bot,...
               'ColumnName', colNames,...
               'ColumnWidth', 'auto',...
               'Data', {'' '' '' ''});
+
+      this.comps('deckA') = deckA;
+      this.comps('deckB') = deckB;
       this.comps('songlib') = songlib;
     end
 
-    function initComponents(this)
-    end
-
     function setupCallbacks(this)
+      c = this.comps;
+      % TODO: refactor all the deck A/B stuff into one common bootstrapping process
+      deckA = c('deckA');
+      deckB = c('deckB');
+      set(deckA.toggle, 'Callback', {@(src, event) this.eng.toggleDeckA(get(src, 'Value'))})
+      set(deckB.toggle, 'Callback', {@(src, event) this.eng.toggleDeckB(get(src, 'Value'))})
     end
 
     function displayGUI(this)
@@ -95,8 +123,8 @@ classdef MATrax < handle
         set(songlib, 'ColumnWidth', calcColWidth(songData, [128 64 64 32 32]));
 
         % TODO: remove this (just for testing)
-        initWaveform(this.comps('deckA').plot, songs(1).file);
-        initWaveform(this.comps('deckB').plot, songs(2).file);
+        this.eng.loadDeckA(songs(1).file);
+        this.eng.loadDeckB(songs(2).file);
       end
     end
 
@@ -124,13 +152,14 @@ classdef MATrax < handle
       obj.eng = MATraxEngine();
       % Init map for ui components
       obj.comps = containers.Map();
+
       % Set up GUI
-      initGUI(obj);
-      addMenus(obj);
-      addComponents(obj);
-      initComponents(obj);
-      setupCallbacks(obj);
-      displayGUI(obj);
+      obj.initGUI;
+      obj.addMenus;
+      obj.setLayout;
+      obj.addComponents;
+      obj.setupCallbacks;
+      obj.displayGUI;
     end
   end
 end
