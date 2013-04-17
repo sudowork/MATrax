@@ -79,7 +79,17 @@ classdef MATrax < handle
     %% GUI Callbacks
     function reloadLibrary(this)
       if this.eng.loadLibrary();
-        % update GUI
+        % on successful load, convert songs to cell array and repopulate song
+        % uitable with new data
+        songlib = this.comps('songlib');
+        songs = this.eng.songs;
+        numCols = length(get(songlib, 'ColumnName'));
+        songData = cell(length(songs), numCols);
+        for i = 1:length(songs)
+          s = songs(i);
+          songData(i,:) = struct2cell(s);%{s.title s.artist s.album s.time s.path};
+        end
+        set(this.comps('songlib'), 'Data', songData);
       end
     end
 
