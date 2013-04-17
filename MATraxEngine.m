@@ -34,7 +34,14 @@ classdef MATraxEngine < handle
                       'path', fullfile(this.libDir, file.name));
       end
 
-      userDir = uigetdir(pwd(), 'Open Directory Containing Tracks');
+      if isdeployed
+        % TODO: test USERPROFILE for windows
+        homeVars = {'HOME' 'USERPROFILE'};
+        defDir = getenv(homeVars{ispc + 1});
+      else
+        defDir = pwd;
+      end
+      userDir = uigetdir(defDir, 'Open Directory Containing Tracks');
       % if valid directory, process and load songs
       if ischar(userDir) && exist(userDir, 'dir')
         this.libDir = userDir;

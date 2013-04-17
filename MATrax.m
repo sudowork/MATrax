@@ -111,7 +111,7 @@ classdef MATrax < handle
     function obj = MATrax()
       % Add path if not stand-alone
       if ~isdeployed
-        addpath(fullfile(pwd(), 'util'));
+        addpath(fullfile(pwd, 'util'));
       end
 
       % Create new MATraxEngine
