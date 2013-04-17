@@ -32,11 +32,10 @@ classdef MATrax < handle
     end
 
     function addMenus(this)
-      e = this.eng;
       mFile = uimenu(this.f, 'Label', 'File');
       uimenu(mFile, 'Label', 'Load Library',...
                     'Accelerator', 'L',...
-                    'Callback', {@(src, event) e.loadLibrary()});
+                    'Callback', {@(src, event) this.reloadLibrary()});
       uimenu(mFile, 'Label', 'Quit',...
                     'Separator', 'on',...
                     'Callback', {@(src, event) this.quit()});
@@ -53,11 +52,17 @@ classdef MATrax < handle
 
     function displayGUI(this)
       set(this.f, 'Visible', 'on');
-      disp('MATrax GUI Initialized');
+      Console.log('MATrax GUI Initialized');
       uiwait(this.f);
     end
 
     %% GUI Callbacks
+    function reloadLibrary(this)
+      if this.eng.loadLibrary();
+        % update GUI
+      end
+    end
+
     function quit(this)
       switch questdlg('Are you sure you want to quit?', 'Quit Dialog',...
                       'Yes',...
@@ -74,7 +79,7 @@ classdef MATrax < handle
     %% MATrax Constructor
     function obj = MATrax()
       % Create new MATraxEngine
-      obj.eng = MATraxEngine(obj);
+      obj.eng = MATraxEngine();
       % Set up GUI
       initGUI(obj);
       addMenus(obj);
