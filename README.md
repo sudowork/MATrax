@@ -1,4 +1,4 @@
-# MATracks
+# MATrax
 
 A GUI-based DJ software, built in MATLAB.
 
