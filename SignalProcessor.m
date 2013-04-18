@@ -22,28 +22,23 @@ classdef SignalProcessor < handle
 
   methods
     function obj = SignalProcessor(varargin)
-      if (nargin > 0)
-        obj.sys = varargin{1};
-      else
-        obj.sys = ['MATrax_' datestr(now,'MMSSFFF')];
+      if ~isdeployed
+        addpath(fullfile('.', 'models'));
       end
-
-      new_system(obj.sys);
+      obj.sys = 'TrackModel';
       open_system(obj.sys);
 
       %% testing stuff
-      t = (0:1000)';
-      obj.in = struct('time', t, 'signals', struct('values', sin(t)));
+      t = linspace(0,1,44100)';
+      obj.in = struct('time', t, 'signals', struct('values', sin(261.63*2*pi.*t)));
       ws = get_param(obj.sys, 'modelworkspace');
       assignin(ws, 'input', obj.in);
-      add_block('simulink/Sources/In1', [obj.sys '/foo']);
-      add_block('simulink/Sinks/Out1', [obj.sys '/bar']);
-      add_line(obj.sys, 'foo/1', 'bar/1', 'autorouting', 'on');
-      obj.out = sim(obj.sys, 'LoadExternalInput', 'on', 'ExternalInput', 'input');
+      outputs = sim(obj.sys, 'LoadExternalInput', 'on', 'ExternalInput', 'input');
+      obj.out = struct('time', get(outputs, 'tout'), 'signals', struct('values', get(outputs, 'yout')));
     end
 
     function delete(obj)
-      close_system(obj.sys, 0);
+      %close_system(obj.sys, 0);
     end
   end
 end
