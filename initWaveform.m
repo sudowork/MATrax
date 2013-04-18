@@ -9,17 +9,20 @@ function initWaveform(phandle, deck)
 %         `initWaveform(plothandler, deck)` will plot, setup callbacks, and stylize
 %
 % TODO: change this into a more powerful class instead of just a function?
+
   if (nargin > 1)
+    winSize = 5; % seconds
+    winLength = winSize * deck.Fs;
     player = deck.player;
     monoY = (deck.Y(:,1) + deck.Y(:,2)) / 2;
 
     % plot and set axes limits
-    line(0:(length(monoY)-1), monoY, 'Parent', phandle, 'Color', 'g');
+    wave = plot(phandle, monoY(1:winLength), 'g');
     set(phandle,...
-        'XLim', [0 length(monoY)-1],...
+        'XLim', [0 winLength],...
         'YLim', [-1.1 1.1]);
     % set callback to shift X axis at each interval
-    player.TimerFcn = {@(src, event) shiftXLim(player, phandle, length(monoY))};
+    player.TimerFcn = {@(src, event) shiftXLim(wave, monoY, player.CurrentSample, winLength)};
   end
 
   stylize(phandle);
@@ -34,6 +37,6 @@ function stylize(phandle)
       'YTick', []);
 end
 
-function shiftXLim(player, phandle, numSamples)
-  set(phandle, 'XLim', [0 numSamples] + player.CurrentSample);
+function shiftXLim(phandle, data, currSample, numSamples)
+  set(phandle, 'YData', data(currSample:currSample + numSamples));
 end
