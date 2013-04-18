@@ -1,2 +1,4 @@
 library
 bin
+*.autosave
+*.m~
