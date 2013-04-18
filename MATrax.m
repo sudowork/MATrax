@@ -29,6 +29,7 @@ classdef MATrax < handle
                    'Toolbar', 'none',...
                    'Position', [0 0 MATrax.GUI_WIDTH MATrax.GUI_HEIGHT],...
                    'Visible', 'off');
+      set(this.f, 'CloseRequestFcn', {@(src, event) this.destructor()});
       movegui(this.f, 'center');
     end
 
@@ -39,7 +40,7 @@ classdef MATrax < handle
                     'Callback', {@(src, event) this.reloadLibrary()});
       uimenu(mFile, 'Label', 'Quit',...
                     'Separator', 'on',...
-                    'Callback', {@(src, event) this.quit()});
+                    'Callback', {@(src, event) this.destructor()});
     end
 
     function setLayout(this)
@@ -135,14 +136,14 @@ classdef MATrax < handle
       end
     end
 
-    function quit(this)
+    function destructor(this)
       switch questdlg('Are you sure you want to quit?', 'Quit Dialog',...
                       'Yes',...
                       'No',...
                       'Yes');
         case 'Yes'
           delete(this.eng);
-          close(this.f);
+          delete(this.f);
       end
     end
   end

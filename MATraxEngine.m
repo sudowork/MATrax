@@ -12,17 +12,21 @@ classdef MATraxEngine < handle
   end
   properties (SetAccess='private', GetAccess='public')
     songs   % dynamically sized array containing paths to songs
-    deckA   % in the form of {data: [Y, FS], player: audioplayer}
-    deckB   % in the form of {data: [Y, FS], player: audioplayer}
+    deckA   % in the form of {file, Y, Fs, Player}
+    deckB   % in the form of {file, Y, Fs, Player}
   end
 
   methods
     %% MATraxEngine Constructor
     function this = MATraxEngine()
-      this.songs = [];
-      this.deckA = false;
-      this.deckB = false;
       Console.log('MATrax Engine Loaded');
+    end
+
+    % destructor to handle closing resources :)
+    function delete(this)
+      for deck = [this.deckA this.deckB]
+        delete(deck.player);
+      end
     end
 
     %% Callback methods
