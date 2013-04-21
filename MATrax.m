@@ -14,9 +14,10 @@ classdef MATrax < handle
   end
 
   properties (Access=private)
-    f       % figure containing GUI
-    eng     % engine for actually processing music
-    comps   % map of ui components
+    f         % figure containing GUI
+    eng       % engine for actually processing music
+    comps     % map of ui components
+    idxTrack  % keep track of index
   end
 
   methods (Access=private)
@@ -75,8 +76,8 @@ classdef MATrax < handle
       ctlA = c('ctlA');
       ctlB = c('ctlB');
       deckA.toggle = uicontrol('parent', ctlA, 'Style', 'togglebutton', 'string', 'Play/Pause A', 'Position', [0 0 60 20]);
-      deckA.load = uicontrol('parent', ctlA, 'string', 'Move to Deck A', 'Position', [0 0 60 20]);
-      deckB.load = uicontrol('parent', ctlB, 'string', 'Move to Deck B', 'Position', [0 0 60 20]);
+      deckA.load = uicontrol('parent', ctlA, 'string', 'Move to Deck A', 'Position', [0 0 60 20], 'UserData', 'A');
+      deckB.load = uicontrol('parent', ctlB, 'string', 'Move to Deck B', 'Position', [0 0 60 20], 'UserData', 'B');
       deckB.toggle = uicontrol('parent', ctlB, 'Style', 'togglebutton', 'string', 'Play/Pause B', 'Position', [0 0 60 20]);
 
       % bot (library))
@@ -84,8 +85,7 @@ classdef MATrax < handle
       colNames = {'Title' 'Artist' 'Time' 'Bitrate' 'Path'};
       songlib = uitable('parent', bot,...
               'ColumnName', colNames,...
-              'ColumnWidth', 'auto',...
-              'Data', {'' '' '' ''});
+              'ColumnWidth', 'auto');
 
       this.comps('deckA') = deckA;
       this.comps('deckB') = deckB;
@@ -93,29 +93,35 @@ classdef MATrax < handle
     end
 
     function setupCallbacks(this)
-      % TODO: refactor all the deck A/B stuff into one common bootstrapping process
-      function tempA(~,~)
-        temp = this.eng.loadDeckA('./library/01.mp3');
-        initWaveform(deckA.plot, temp);
-      end
-      function tempB(~,~)
-        temp = this.eng.loadDeckB('./library/02.mp3');
-        initWaveform(deckB.plot, temp);
-      end
-
       c = this.comps;
       deckA = c('deckA');
       deckB = c('deckB');
       set(deckA.toggle, 'Callback', {@(src, event) this.eng.toggleDeckA(get(src, 'Value'))})
       set(deckB.toggle, 'Callback', {@(src, event) this.eng.toggleDeckB(get(src, 'Value'))})
-      set(deckA.load, 'Callback', @tempA);
-      set(deckB.load, 'Callback', @tempB);
+      set(deckA.load, 'Callback', {@(src, ~) this.loadDeck(src); });
+      set(deckB.load, 'Callback', {@(src, ~) this.loadDeck(src); });
     end
 
     function displayGUI(this)
       set(this.f, 'Visible', 'on');
       Console.log('MATrax GUI Initialized');
-      uiwait(this.f);
+      %uiwait(this.f);
+    end
+
+    function modJavaObjs(this)
+    % NOTE: Java objects must be modified after GUI is shown
+      c = this.comps;
+      % configure uitable for row-wise selection
+      songlib = c('songlib');
+      jSonglib = findjobj(songlib);
+      jTable = jSonglib.getViewport.getView;
+      jTable.setNonContiguousCellSelection(false);
+      jTable.setColumnSelectionAllowed(false);
+      jTable.setRowSelectionAllowed(true);
+      jTable.setAutoResizeMode(jTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+      % NOTE: Modifying table above causes normal CellSelectionCallback to break,
+      %       so we directly change the MousePressedCallback
+      set(jTable, 'MousePressedCallback', {@(~, ~) this.updateSelectedTrack(jTable)});
     end
 
     %% GUI Callbacks
@@ -132,7 +138,21 @@ classdef MATrax < handle
           songData(i,:) = struct2cell(s);
         end
         set(songlib, 'Data', songData);
-        set(songlib, 'ColumnWidth', calcColWidth(songData, [128 64 64 32 32]));
+      end
+    end
+
+    function updateSelectedTrack(this, table)
+      this.idxTrack = table.getSelectedRow + 1;
+    end
+
+    function loadDeck(this, src)
+      deck = get(src, 'UserData');
+      if length(this.eng.songs) > this.idxTrack
+        song = this.eng.songs(this.idxTrack);
+        Console.log(sprintf('Moving song "%s" to Deck %s', song.title, deck));
+        wave = this.eng.(['loadDeck' deck])(song.file);
+        waveform = this.comps(['deck' deck]).plot;
+        initWaveform(waveform, wave);
       end
     end
 
@@ -169,6 +189,7 @@ classdef MATrax < handle
       obj.addComponents;
       obj.setupCallbacks;
       obj.displayGUI;
+      obj.modJavaObjs;
     end
   end
 end
