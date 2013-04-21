@@ -11,10 +11,10 @@ function initWaveform(phandle, deck)
 % TODO: change this into a more powerful class instead of just a function?
 
   if (nargin > 1)
-    winSize = 5; % seconds
-    winLength = winSize * deck.Fs;
-    player = deck.player;
-    monoY = (deck.Y(:,1) + deck.Y(:,2)) / 2;
+    winSize = 2.5; % seconds
+    winLength = winSize * MATrax.AUD_SAMPLE_RATE;
+    Y = deck.getWaveform();
+    monoY = (Y(:,1) + Y(:,2)) / 2;
 
     % plot and set axes limits
     wave = plot(phandle, monoY(1:winLength), 'g');
@@ -22,7 +22,7 @@ function initWaveform(phandle, deck)
         'XLim', [0 winLength],...
         'YLim', [-1.1 1.1]);
     % set callback to shift X axis at each interval
-    player.TimerFcn = {@(src, event) shiftXLim(wave, monoY, player.CurrentSample, winLength)};
+    deck.setCallback(@(src, event) shiftXLim(wave, monoY, deck.getCurrentSample(), winLength));
   end
 
   stylize(phandle);

@@ -3,6 +3,9 @@ classdef Deck < handle
     ar
     file
     currentSample
+    waveform
+    callback
+    latency
     isPlaying = false
 
     % derived
@@ -55,7 +58,24 @@ classdef Deck < handle
     end
 
     function cs = getCurrentSample(this)
-      cs = this.currentSample;
+      cs = round(this.currentSample - this.latency * MATrax.AUD_SAMPLE_RATE);
+      if cs <= 0
+        cs = 1;
+      end
+    end
+
+    function wf = getWaveform(this)
+      wf = this.waveform;
+    end
+
+    function setCallback(this, cb)
+      this.callback = cb;
+    end
+
+    function runCallback(this)
+      if isa(this.callback, 'function_handle')
+        this.callback();
+      end
     end
 
     function deck = loadDeck(this, file)
@@ -63,7 +83,9 @@ classdef Deck < handle
       this.ar = dsp.AudioFileReader('Filename', file,...
                                     'SamplesPerFrame', MATrax.AUD_FRAME_SIZE);
       this.channels = this.ar.info.NumChannels;
-      this.currentSample = 0;
+      this.currentSample = 1;
+      this.waveform = audioread(file);
+      this.latency = round((1 + MATrax.AUD_FRAME_SIZE * 2 / MATrax.AUD_SAMPLE_RATE) * 1000) / 1000;
       % return ref to self
       deck = this;
     end

@@ -158,11 +158,9 @@ classdef MATrax < handle
       if length(this.eng.songs) > this.idxTrack
         song = this.eng.songs(this.idxTrack);
         Console.log(sprintf('Moving song "%s" to Deck %s', song.title, deck));
-        this.eng.loadDeck(deck, song.file);
-        % TODO: fix deck implementation to allow showing waveform
-        % wave = this.eng.(['loadDeck' deck])(song.file);
-        % waveform = this.comps(['deck' deck]).plot;
-        % initWaveform(waveform, wave);
+        wave = this.eng.loadDeck(deck, song.file);
+        waveform = this.comps(['deck' deck]).plot;
+        initWaveform(waveform, wave);
       end
     end
 

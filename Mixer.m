@@ -6,6 +6,8 @@ classdef Mixer < handle
     t_played
     t_clock
     playbackTimer
+    cb_last
+    cb_interval = .05
     % tunable
     isPlaying = false
     abBalance = 0.5
@@ -21,6 +23,7 @@ classdef Mixer < handle
         this.t_played = 0;
         % reset timer
         this.playbackTimer = tic();
+        this.cb_last = toc(this.playbackTimer);
       else
         this.isPlaying = false;
       end
@@ -57,6 +60,12 @@ classdef Mixer < handle
 
           % update amount buffered
           this.t_played = this.t_played + this.time_step;
+
+          if this.t_clock > this.cb_last + this.cb_interval
+            this.cb_last = this.t_clock;
+            A.runCallback;
+            B.runCallback;
+          end
         end
 
         % update clock
