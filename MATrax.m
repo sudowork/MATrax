@@ -143,7 +143,8 @@ classdef MATrax < handle
         songData = cell(length(songs), numCols);
         for i = 1:length(songs)
           s = songs(i);
-          songData(i,:) = struct2cell(s);
+          caSongs = struct2cell(s);
+          songData(i,:) = {caSongs{1:numCols}};
         end
         set(songlib, 'Data', songData);
       end
@@ -158,7 +159,7 @@ classdef MATrax < handle
       if length(this.eng.songs) > this.idxTrack
         song = this.eng.songs(this.idxTrack);
         Console.log(sprintf('Moving song "%s" to Deck %s', song.title, deck));
-        wave = this.eng.loadDeck(deck, song.file);
+        wave = this.eng.loadDeck(deck, this.idxTrack);
         waveform = this.comps(['deck' deck]).plot;
         initWaveform(waveform, wave);
       end

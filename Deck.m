@@ -78,13 +78,13 @@ classdef Deck < handle
       end
     end
 
-    function deck = loadDeck(this, file)
+    function deck = loadDeck(this, file, waveform)
       this.file = file;
       this.ar = dsp.AudioFileReader('Filename', file,...
                                     'SamplesPerFrame', MATrax.AUD_FRAME_SIZE);
       this.channels = this.ar.info.NumChannels;
       this.currentSample = 1;
-      this.waveform = audioread(file);
+      this.waveform = waveform;
       this.latency = round((1 + MATrax.AUD_FRAME_SIZE * 2 / MATrax.AUD_SAMPLE_RATE) * 1000) / 1000;
       % return ref to self
       deck = this;

@@ -49,7 +49,8 @@ classdef MATraxEngine < handle
                       'artist', metadata.Artist,...
                       'time', sprintf('%d:%02d', round(duration/60), mod(duration, 60)),...
                       'bitrate', metadata.BitRate,...
-                      'file', metadata.Filename);
+                      'file', metadata.Filename,...
+                      'waveform', audioread(path));
       end
 
       if isdeployed
@@ -75,8 +76,9 @@ classdef MATraxEngine < handle
       end
     end
 
-    function deck = loadDeck(this, deckLetter, file)
-      deck = this.(['deck' deckLetter]).loadDeck(file);
+    function deck = loadDeck(this, deckLetter, songIndex)
+      song = this.songs(songIndex);
+      deck = this.(['deck' deckLetter]).loadDeck(song.file, song.waveform);
     end
 
     function toggleDeck(this, deckLetter, currstate)
