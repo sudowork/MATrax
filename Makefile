@@ -1,12 +1,13 @@
 OUTPUTDIR="$(CURDIR)/bin"
 MFILE=MATrax.m
 INCLUDE="$(CURDIR)/util"
+LIB="$(CURDIR)/lib"
 
 all: matrax
 
 matrax:
 	-mkdir -p $(OUTPUTDIR)
-	mcc -v -I $(INCLUDE) -d $(OUTPUTDIR) -m $(MFILE)
+	mcc -v -I $(LIB) -I $(INCLUDE) -d $(OUTPUTDIR) -m $(MFILE)
 
 clean:
 	-rm -fv $(OUTPUTDIR)/*.sh
