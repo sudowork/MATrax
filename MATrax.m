@@ -108,7 +108,7 @@ classdef MATrax < handle
       set(deckB.toggle, 'Callback', {@(src, event) this.eng.toggleDeck('B', get(src, 'Value'))})
       set(deckA.load, 'Callback', {@(src, ~) this.loadDeck(src); });
       set(deckB.load, 'Callback', {@(src, ~) this.loadDeck(src); });
-      set(c('crossfader'), 'Callback', {@(src,~) this.eng.crossfade(get(src, 'Value'))});
+      addlistener(c('crossfader'), 'Value', 'PostSet', @(~,event) this.eng.crossfade(event.newValue));
     end
 
     function displayGUI(this)

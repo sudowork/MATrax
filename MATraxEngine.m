@@ -84,7 +84,6 @@ classdef MATraxEngine < handle
     end
 
     function crossfade(this, bal)
-      disp(bal);
       this.mixer.setBalance(bal);
     end
   end
