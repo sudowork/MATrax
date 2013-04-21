@@ -12,21 +12,29 @@ classdef MATraxEngine < handle
   end
   properties (SetAccess='private', GetAccess='public')
     songs   % dynamically sized array containing paths to songs
-    deckA   % in the form of {file, Y, Fs, Player}
-    deckB   % in the form of {file, Y, Fs, Player}
+    deckA   % Deck A
+    deckB   % Deck B
+    mixer   % mixer that mixes two decks
   end
 
   methods
     %% MATraxEngine Constructor
     function this = MATraxEngine()
+      this.deckA = Deck();
+      this.deckB = Deck();
+      this.mixer = Mixer(this.deckA, this.deckB);
       Console.log('MATrax Engine Loaded');
     end
 
     % destructor to handle closing resources :)
     function delete(this)
       for deck = [this.deckA this.deckB]
-        delete(deck.player);
+        delete(deck);
       end
+    end
+
+    function start(this)
+      this.mixer.play();
     end
 
     %% Callback methods
@@ -68,41 +76,29 @@ classdef MATraxEngine < handle
     end
 
     function deck = loadDeckA(this, file)
-      deck = MATraxEngine.loadDeckFromFile(file);
-      this.deckA = deck;
+      deck = this.deckA.loadDeck(file);
     end
 
     function deck = loadDeckB(this, file)
-      deck = MATraxEngine.loadDeckFromFile(file);
-      this.deckB = deck;
+      deck = this.deckB.loadDeck(file);
     end
 
     function toggleDeckA(this, currstate)
-      MATraxEngine.togglePlayer(this.deckA.player, currstate);
+      MATraxEngine.togglePlayer(this.deckA, currstate);
     end
 
     function toggleDeckB(this, currstate)
-      MATraxEngine.togglePlayer(this.deckB.player, currstate);
+      MATraxEngine.togglePlayer(this.deckB, currstate);
     end
   end
 
   methods (Static)
-    function deck = loadDeckFromFile(file)
-      deck.file = file;
-      [deck.Y, deck.Fs] = audioread(file);
-      deck.player = audioplayer(deck.Y, deck.Fs);
-    end
-
-    function togglePlayer(player, currstate)
+    function togglePlayer(deck, currstate)
       if currstate
-        if get(player, 'CurrentSample')
-          player.resume
-        else
-          player.play;
-        end
+        deck.play;
         Console.log('Playing');
       else
-        player.pause;
+        deck.pause;
         Console.log('Paused');
       end
     end
