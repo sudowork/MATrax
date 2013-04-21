@@ -75,20 +75,12 @@ classdef MATraxEngine < handle
       end
     end
 
-    function deck = loadDeckA(this, file)
-      deck = this.deckA.loadDeck(file);
+    function deck = loadDeck(this, deckLetter, file)
+      deck = this.(['deck' deckLetter]).loadDeck(file);
     end
 
-    function deck = loadDeckB(this, file)
-      deck = this.deckB.loadDeck(file);
-    end
-
-    function toggleDeckA(this, currstate)
-      MATraxEngine.togglePlayer(this.deckA, currstate);
-    end
-
-    function toggleDeckB(this, currstate)
-      MATraxEngine.togglePlayer(this.deckB, currstate);
+    function toggleDeck(this, deckLetter, currstate)
+      MATraxEngine.togglePlayer(this.(['deck' deckLetter]), currstate);
     end
 
     function crossfade(this, bal)

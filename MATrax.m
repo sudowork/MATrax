@@ -104,8 +104,8 @@ classdef MATrax < handle
       c = this.comps;
       deckA = c('deckA');
       deckB = c('deckB');
-      set(deckA.toggle, 'Callback', {@(src, event) this.eng.toggleDeckA(get(src, 'Value'))})
-      set(deckB.toggle, 'Callback', {@(src, event) this.eng.toggleDeckB(get(src, 'Value'))})
+      set(deckA.toggle, 'Callback', {@(src, event) this.eng.toggleDeck('A', get(src, 'Value'))})
+      set(deckB.toggle, 'Callback', {@(src, event) this.eng.toggleDeck('B', get(src, 'Value'))})
       set(deckA.load, 'Callback', {@(src, ~) this.loadDeck(src); });
       set(deckB.load, 'Callback', {@(src, ~) this.loadDeck(src); });
       set(c('crossfader'), 'Callback', {@(src,~) this.eng.crossfade(get(src, 'Value'))});
@@ -158,7 +158,7 @@ classdef MATrax < handle
       if length(this.eng.songs) > this.idxTrack
         song = this.eng.songs(this.idxTrack);
         Console.log(sprintf('Moving song "%s" to Deck %s', song.title, deck));
-        this.eng.(['loadDeck' deck])(song.file);
+        this.eng.loadDeck(deck, song.file);
         % TODO: fix deck implementation to allow showing waveform
         % wave = this.eng.(['loadDeck' deck])(song.file);
         % waveform = this.comps(['deck' deck]).plot;
@@ -203,6 +203,9 @@ classdef MATrax < handle
 
       % start engine
       obj.eng.start();
+
+      % wait for main window to close
+      uiwait(obj.f);
     end
   end
 end
