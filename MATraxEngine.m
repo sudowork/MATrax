@@ -90,6 +90,11 @@ classdef MATraxEngine < handle
     function toggleDeckB(this, currstate)
       MATraxEngine.togglePlayer(this.deckB, currstate);
     end
+
+    function crossfade(this, bal)
+      disp(bal);
+      this.mixer.setBalance(bal);
+    end
   end
 
   methods (Static)

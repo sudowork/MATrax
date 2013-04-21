@@ -52,7 +52,7 @@ classdef Mixer < handle
       while this.isPlaying
         % buffer until we buffer into the future for pseudo-real-time mixing
         if this.t_played < this.t_clock + this.time_step
-          audio = A.step * this.abBalance + B.step * (1 - this.abBalance);
+          audio = A.step * (1 - this.abBalance) + B.step * this.abBalance;
           this.ap.step(audio);
 
           % update amount buffered

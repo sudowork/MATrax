@@ -55,14 +55,16 @@ classdef MATrax < handle
       top = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .59 .98 .40]);
 
       mid = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .42 .98 .16]);
-      ctlA = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.01 .01 .59 .98]);
-      ctlB = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.01 .01 .59 .98]);
+      ctlA = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.01 .01 .32 .98]);
+      ctlMid = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.34 .01 .32 .98]);
+      ctlB = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.67 .01 .32 .98]);
 
       bot = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .01 .98 .40]);
 
       this.comps('root') = root;
       this.comps('top') = top;
       this.comps('ctlA') = ctlA;
+      this.comps('ctlMid') = ctlMid;
       this.comps('ctlB') = ctlB;
       this.comps('bot') = bot;
     end
@@ -78,9 +80,11 @@ classdef MATrax < handle
 
       % mid (controls)
       ctlA = c('ctlA');
+      ctlMid = c('ctlMid');
       ctlB = c('ctlB');
       deckA.toggle = uicontrol('parent', ctlA, 'Style', 'togglebutton', 'string', 'Play/Pause A', 'Position', [0 0 60 20]);
       deckA.load = uicontrol('parent', ctlA, 'string', 'Move to Deck A', 'Position', [0 0 60 20], 'UserData', 'A');
+      this.comps('crossfader') = uicontrol('parent', ctlMid, 'Style', 'slider', 'Min', 0, 'Max', 1, 'Value', 0.5);
       deckB.load = uicontrol('parent', ctlB, 'string', 'Move to Deck B', 'Position', [0 0 60 20], 'UserData', 'B');
       deckB.toggle = uicontrol('parent', ctlB, 'Style', 'togglebutton', 'string', 'Play/Pause B', 'Position', [0 0 60 20]);
 
@@ -104,12 +108,12 @@ classdef MATrax < handle
       set(deckB.toggle, 'Callback', {@(src, event) this.eng.toggleDeckB(get(src, 'Value'))})
       set(deckA.load, 'Callback', {@(src, ~) this.loadDeck(src); });
       set(deckB.load, 'Callback', {@(src, ~) this.loadDeck(src); });
+      set(c('crossfader'), 'Callback', {@(src,~) this.eng.crossfade(get(src, 'Value'))});
     end
 
     function displayGUI(this)
       set(this.f, 'Visible', 'on');
       Console.log('MATrax GUI Initialized');
-      %uiwait(this.f);
     end
 
     function modJavaObjs(this)
