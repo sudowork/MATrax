@@ -8,9 +8,13 @@ classdef MATrax < handle
 % See Also: MATRAXENGINE, INITWAVEFORM
   %% Properties
   properties (Constant)
+    % gui properties
     GUI_NAME = 'MATrax';
     GUI_WIDTH = 800;
     GUI_HEIGHT = 600;
+    % audio/playback properties
+    AUD_FRAME_SIZE = 256;
+    AUD_SAMPLE_RATE = 44.1e3;
   end
 
   properties (Access=private)
