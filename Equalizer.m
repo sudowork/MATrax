@@ -7,6 +7,10 @@ classdef Equalizer < handle
     Tc  % Treble cutoff freq
   end
 
+  properties
+    filters
+  end
+
   methods (Static)
     function f = shiftHalfSteps(f0, n)
       a = 2^(1/12); % twelfth root of 2 (e.g. half steps in an octave)
@@ -19,6 +23,9 @@ classdef Equalizer < handle
       obj.setSamplingRate(Fs);
       obj.Bc = Bc;
       obj.Tc = Tc;
+      obj.filters.bass = obj.getBassEq();
+      obj.filters.mid = obj.getMidEq();
+      obj.filters.treble = obj.getTrebleEq();
     end
 
     function setSamplingRate(this, Fs)
@@ -27,15 +34,17 @@ classdef Equalizer < handle
     end
 
     % Use elliptic filter for low-pass (sharpest cutoff)
-    function [b,a] = getBassEq(this)
+    function out = getBassEq(this)
       n = 5;        % Order
       Rp = 5;       % Ripple for pass band (~5 dB recommended for < 300Hz)
       Rs = 90;      % Attenuation for stop band
       [b,a] = ellip(n, Rp, Rs, this.Bc/this.Ns);
+      out.b = b;
+      out.a = a;
     end
 
     % Use Chebyshev filter for mids using Park-McClennan
-    function [b,a] = getMidEq(this)
+    function out = getMidEq(this)
       t = 100;  % transition window size (equiripple to prevent blow up)
       Fs1 = this.Bc - t;
       Fp1 = this.Bc + t;
@@ -51,15 +60,18 @@ classdef Equalizer < handle
       % compute filter params
       [n,fo,ao,w] = firpmord(f,A,dev);
       b = firpm(n,fo,ao,w);
-      a = 1;
+      out.b = b;
+      out.a = 1;
     end
 
     % Use elliptic high pass filter for treble eq
-    function [b,a] = getTrebleEq(this)
+    function out = getTrebleEq(this)
       n = 10;       % Order
       Rp = 2;       % Ripple for pass band (~2 dB recommended for > 300Hz)
       Rs = 90;      % Attenuation for stop band
       [b,a] = ellip(n, Rp, Rs, this.Tc/this.Ns, 'high');
+      out.b = b;
+      out.a = a;
     end
 
     % don't actually use this (it's slow)

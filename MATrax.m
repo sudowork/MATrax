@@ -16,7 +16,8 @@ classdef MATrax < handle
     GUI_EQ_WIDTH = 400;
     GUI_EQ_HEIGHT = 300;
     % audio/playback properties
-    AUD_FRAME_SIZE = 256;
+    AUD_QUEUE_DUR = 0.3;
+    AUD_FRAME_SIZE = 2048;
     AUD_SAMPLE_RATE = 44.1e3;
   end
 
@@ -129,9 +130,9 @@ classdef MATrax < handle
       % equalizer components
       eqTop = c('eqTop');
       eqBot = c('eqBot');
-      eqCtl.bass = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 1, 'Value', 0.5);
-      eqCtl.mid = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 1, 'Value', 0.5);
-      eqCtl.treble = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 1, 'Value', 0.5);
+      eqCtl.bass = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 2, 'Value', 1);
+      eqCtl.mid = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 2, 'Value', 1);
+      eqCtl.treble = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 2, 'Value', 1);
       eqCtl.toggle = uicontrol('Parent', eqBot, 'Style', 'togglebutton', 'String', 'Enable Equalizer');
       this.comps('eqCtl') = eqCtl;
     end
@@ -148,10 +149,10 @@ classdef MATrax < handle
       addlistener(c('crossfader'), 'Value', 'PostSet', @(~,event) this.eng.crossfade(event.newValue));
       % equalizer callbacks
       % TODO: fill these in with real implementations
-      addlistener(c('eqCtl').bass, 'Value', 'PostSet', @(~,event) disp(event.newValue));
-      addlistener(c('eqCtl').mid, 'Value', 'PostSet', @(~,event) disp(event.newValue));
-      addlistener(c('eqCtl').treble, 'Value', 'PostSet', @(~,event) disp(event.newValue));
-      set(c('eqCtl').toggle, 'Callback', @(src,~) disp(get(src, 'Value')));
+      addlistener(c('eqCtl').bass, 'Value', 'PostSet', @(~,event) this.eng.setBassGain(event.newValue));
+      addlistener(c('eqCtl').mid, 'Value', 'PostSet', @(~,event) this.eng.setMidGain(event.newValue));
+      addlistener(c('eqCtl').treble, 'Value', 'PostSet', @(~,event) this.eng.setTrebleGain(event.newValue));
+      set(c('eqCtl').toggle, 'Callback', @(src,~) this.eng.setEqEnable(get(src, 'Value')));
     end
 
     function displayGUI(this)
@@ -199,7 +200,7 @@ classdef MATrax < handle
 
     function loadDeck(this, src)
       deck = get(src, 'UserData');
-      if length(this.eng.songs) > this.idxTrack
+      if length(this.eng.songs) >= this.idxTrack
         song = this.eng.songs(this.idxTrack);
         Console.log(sprintf('Moving song "%s" to Deck %s', song.title, deck));
         wave = this.eng.loadDeck(deck, this.idxTrack);

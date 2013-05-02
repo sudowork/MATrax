@@ -85,8 +85,25 @@ classdef MATraxEngine < handle
       MATraxEngine.togglePlayer(this.(['deck' deckLetter]), currstate);
     end
 
+    % TODO: refactor this so it doesn't just call mixer (perhaps integrate mixer w/ engine)
     function crossfade(this, bal)
       this.mixer.setBalance(bal);
+    end
+
+    function setBassGain(this, gain)
+      this.mixer.setEqGain(1, gain);
+    end
+
+    function setMidGain(this, gain)
+      this.mixer.setEqGain(2, gain);
+    end
+
+    function setTrebleGain(this, gain)
+      this.mixer.setEqGain(3, gain);
+    end
+
+    function setEqEnable(this, enabled)
+      this.mixer.setEqEnable(enabled);
     end
   end
 

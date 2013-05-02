@@ -7,10 +7,13 @@ classdef Mixer < handle
     t_clock
     playbackTimer
     cb_last
-    cb_interval = .05
+    cb_interval = .1
+    eq
     % tunable
     isPlaying = false
     abBalance = 0.5
+    eqGain = [1 1 1]
+    eqEnabled
     % derived
     time_step
   end
@@ -34,10 +37,14 @@ classdef Mixer < handle
     function obj = Mixer(arA, arB)
       obj.arA = arA;
       obj.arB = arB;
+      % set up audio output device
       obj.ap = dsp.AudioPlayer('SampleRate', MATrax.AUD_SAMPLE_RATE,...
                                'BufferSizeSource', 'Property',...
-                               'BufferSize', MATrax.AUD_FRAME_SIZE);
+                               'BufferSize', MATrax.AUD_FRAME_SIZE,...
+                               'QueueDuration', MATrax.AUD_QUEUE_DUR);
       obj.time_step = MATrax.AUD_FRAME_SIZE / MATrax.AUD_SAMPLE_RATE;
+      % set up equalizer
+      obj.eq = Equalizer(MATrax.AUD_SAMPLE_RATE, 350, 5200);
     end
 
     function delete(this)
@@ -55,7 +62,14 @@ classdef Mixer < handle
       while this.isPlaying
         % buffer until we buffer into the future for pseudo-real-time mixing
         if this.t_played < this.t_clock + this.time_step
+          % get audio from both decks and crossfade
           audio = A.step * (1 - this.abBalance) + B.step * this.abBalance;
+          % apply equalizer if necessary
+          if (this.eqEnabled)
+            audio = (this.eqGain(1) .* filter(this.eq.filters.bass.b, this.eq.filters.bass.a, audio))...
+              + (this.eqGain(2) .* filter(this.eq.filters.mid.b, this.eq.filters.mid.a, audio))...
+              + (this.eqGain(3) .* filter(this.eq.filters.treble.b, this.eq.filters.treble.a, audio));
+          end
           this.ap.step(audio);
 
           % update amount buffered
@@ -82,9 +96,17 @@ classdef Mixer < handle
       this.abBalance = bal;
     end
 
+    function setEqGain(this, param, gain)
+      this.eqGain(param) = gain;
+      disp(this.eqGain);
+    end
+
+    function setEqEnable(this, enabled)
+      this.eqEnabled = enabled;
+      disp(this.eqEnabled);
+    end
+
     function release(this)
-      this.arA.release;
-      this.arB.release;
       this.ap.release;
     end
   end

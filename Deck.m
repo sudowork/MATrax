@@ -85,7 +85,7 @@ classdef Deck < handle
       this.channels = this.ar.info.NumChannels;
       this.currentSample = 1;
       this.waveform = waveform;
-      this.latency = round((1 + MATrax.AUD_FRAME_SIZE * 2 / MATrax.AUD_SAMPLE_RATE) * 1000) / 1000;
+      this.latency = round((MATrax.AUD_QUEUE_DUR + MATrax.AUD_FRAME_SIZE * 2 / MATrax.AUD_SAMPLE_RATE) * 1000) / 1000;
       % return ref to self
       deck = this;
     end
