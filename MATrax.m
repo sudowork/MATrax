@@ -12,6 +12,9 @@ classdef MATrax < handle
     GUI_NAME = 'MATrax';
     GUI_WIDTH = 800;
     GUI_HEIGHT = 600;
+    GUI_EQ_NAME = 'Equalizer';
+    GUI_EQ_WIDTH = 400;
+    GUI_EQ_HEIGHT = 300;
     % audio/playback properties
     AUD_FRAME_SIZE = 256;
     AUD_SAMPLE_RATE = 44.1e3;
@@ -20,6 +23,7 @@ classdef MATrax < handle
   properties (Access=private)
     f         % figure containing GUI
     eng       % engine for actually processing music
+    eq        % gui for equalizer
     comps     % map of ui components
     idxTrack  % keep track of index
   end
@@ -27,6 +31,7 @@ classdef MATrax < handle
   methods (Access=private)
     %% GUI initialization methods
     function initGUI(this)
+      % main window
       this.f = figure(...
                    'Name', MATrax.GUI_NAME,...
                    'NumberTitle', 'off',...
@@ -36,6 +41,15 @@ classdef MATrax < handle
                    'Visible', 'off');
       set(this.f, 'CloseRequestFcn', {@(src, event) this.destructor()});
       movegui(this.f, 'center');
+      % equalizer window
+      this.eq = figure(...
+                   'Name', MATrax.GUI_EQ_NAME,...
+                   'NumberTitle', 'off',...
+                   'MenuBar', 'none',...
+                   'Toolbar', 'none',...
+                   'Position', [0 0 MATrax.GUI_EQ_WIDTH MATrax.GUI_EQ_HEIGHT],...
+                   'Visible', 'off');
+      movegui(this.eq, 'center');
     end
 
     function addMenus(this)
@@ -46,27 +60,39 @@ classdef MATrax < handle
       uimenu(mFile, 'Label', 'Quit',...
                     'Separator', 'on',...
                     'Callback', {@(src, event) this.destructor()});
+      mPreferences = uimenu(this.f, 'Label', 'Preferences');
+      uimenu(mPreferences, 'Label', 'Equalizer',...
+                           'Accelerator', 'E',...
+                           'Callback', {@(src, event) this.displayEqualizer()});
     end
 
     function setLayout(this)
+      % main window layout
       root = uigridcontainer('v0', this.f, 'Units', 'norm', 'Position', [.01 .01 .98 .98]);
       set(root, 'GridSize', [3, 1], 'VerticalWeight', [3 1 3]);
 
-      top = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .59 .98 .40]);
+      top = uiflowcontainer('v0', 'Parent', root, 'Units', 'norm', 'Position', [.01 .59 .98 .40]);
 
-      mid = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .42 .98 .16]);
-      ctlA = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.01 .01 .32 .98]);
-      ctlMid = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.34 .01 .32 .98]);
-      ctlB = uiflowcontainer('v0', 'parent', mid', 'Units', 'norm', 'Position', [.67 .01 .32 .98]);
+      mid = uiflowcontainer('v0', 'Parent', root, 'Units', 'norm', 'Position', [.01 .42 .98 .16]);
+      ctlA = uiflowcontainer('v0', 'Parent', mid', 'Units', 'norm', 'Position', [.01 .01 .32 .98]);
+      ctlMid = uiflowcontainer('v0', 'Parent', mid', 'Units', 'norm', 'Position', [.34 .01 .32 .98]);
+      ctlB = uiflowcontainer('v0', 'Parent', mid', 'Units', 'norm', 'Position', [.67 .01 .32 .98]);
 
-      bot = uiflowcontainer('v0', 'parent', root, 'Units', 'norm', 'Position', [.01 .01 .98 .40]);
+      bot = uiflowcontainer('v0', 'Parent', root, 'Units', 'norm', 'Position', [.01 .01 .98 .40]);
 
-      this.comps('root') = root;
       this.comps('top') = top;
       this.comps('ctlA') = ctlA;
       this.comps('ctlMid') = ctlMid;
       this.comps('ctlB') = ctlB;
       this.comps('bot') = bot;
+
+      % equalizer layout
+      eqRoot = uigridcontainer('v0', this.eq, 'Units', 'norm', 'Position', [.01 .01 .98 .98]);
+      set(eqRoot, 'GridSize', [2, 1], 'VerticalWeight', [8 2]);
+      eqTop = uiflowcontainer('v0', 'Parent', eqRoot, 'Units', 'norm', 'Position', [.01 .01 .98 .98]);
+      eqBot = uiflowcontainer('v0', 'Parent', eqRoot, 'Units', 'norm', 'Position', [.01 .01 .98 .98]);
+      this.comps('eqTop') = eqTop;
+      this.comps('eqBot') = eqBot;
     end
 
     function addComponents(this)
@@ -98,17 +124,33 @@ classdef MATrax < handle
       this.comps('deckA') = deckA;
       this.comps('deckB') = deckB;
       this.comps('songlib') = songlib;
+
+      % equalizer components
+      eqTop = c('eqTop');
+      eqBot = c('eqBot');
+      eqCtl.bass = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 1, 'Value', 0.5);
+      eqCtl.mid = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 1, 'Value', 0.5);
+      eqCtl.treble = uicontrol('Parent', eqTop, 'Style', 'slider', 'Min', 0, 'Max', 1, 'Value', 0.5);
+      eqCtl.toggle = uicontrol('Parent', eqBot, 'Style', 'togglebutton', 'String', 'Enable Equalizer');
+      this.comps('eqCtl') = eqCtl;
     end
 
     function setupCallbacks(this)
       c = this.comps;
+      % deck and crossfader control callbacks
       deckA = c('deckA');
       deckB = c('deckB');
-      set(deckA.toggle, 'Callback', {@(src, event) this.eng.toggleDeck('A', get(src, 'Value'))})
-      set(deckB.toggle, 'Callback', {@(src, event) this.eng.toggleDeck('B', get(src, 'Value'))})
-      set(deckA.load, 'Callback', {@(src, ~) this.loadDeck(src); });
-      set(deckB.load, 'Callback', {@(src, ~) this.loadDeck(src); });
+      set(deckA.toggle, 'Callback', {@(src,~) this.eng.toggleDeck('A', get(src, 'Value'))})
+      set(deckB.toggle, 'Callback', {@(src,~) this.eng.toggleDeck('B', get(src, 'Value'))})
+      set(deckA.load, 'Callback', {@(src,~) this.loadDeck(src); });
+      set(deckB.load, 'Callback', {@(src,~) this.loadDeck(src); });
       addlistener(c('crossfader'), 'Value', 'PostSet', @(~,event) this.eng.crossfade(event.newValue));
+      % equalizer callbacks
+      % TODO: fill these in with real implementations
+      addlistener(c('eqCtl').bass, 'Value', 'PostSet', @(~,event) disp(event.newValue));
+      addlistener(c('eqCtl').mid, 'Value', 'PostSet', @(~,event) disp(event.newValue));
+      addlistener(c('eqCtl').treble, 'Value', 'PostSet', @(~,event) disp(event.newValue));
+      set(c('eqCtl').toggle, 'Callback', @(src,~) disp(get(src, 'Value')));
     end
 
     function displayGUI(this)
@@ -163,6 +205,10 @@ classdef MATrax < handle
         waveform = this.comps(['deck' deck]).plot;
         initWaveform(waveform, wave);
       end
+    end
+
+    function displayEqualizer(this)
+      set(this.eq, 'Visible', 'on');
     end
 
     function destructor(this)
