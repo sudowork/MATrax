@@ -51,6 +51,7 @@ classdef MATrax < handle
                    'Toolbar', 'none',...
                    'Position', [0 0 MATrax.GUI_EQ_WIDTH MATrax.GUI_EQ_HEIGHT],...
                    'Visible', 'off');
+      set(this.eq, 'CloseRequestFcn', {@(src, event) this.hideEqualizer()});
       movegui(this.eq, 'center');
     end
 
@@ -211,6 +212,10 @@ classdef MATrax < handle
 
     function displayEqualizer(this)
       set(this.eq, 'Visible', 'on');
+    end
+
+    function hideEqualizer(this)
+      set(this.eq, 'Visible', 'off');
     end
 
     function destructor(this)
