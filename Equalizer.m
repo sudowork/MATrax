@@ -56,7 +56,7 @@ classdef Equalizer < handle
 
     % Use elliptic high pass filter for treble eq
     function [b,a] = getTrebleEq(this)
-      n = 10;        % Order
+      n = 10;       % Order
       Rp = 2;       % Ripple for pass band (~2 dB recommended for > 300Hz)
       Rs = 90;      % Attenuation for stop band
       [b,a] = ellip(n, Rp, Rs, this.Tc/this.Ns, 'high');
@@ -81,12 +81,7 @@ classdef Equalizer < handle
       [b1,a1] = this.getBassEq();
       [b2,a2] = this.getMidEq();
       [b3,a3] = this.getTrebleEq();
-      figure;
-      freqz(b1,a1);
-      hold on;
-      freqz(b2,a2);
-      freqz(b3,a3);
-      hold off;
+      fvtool(b1,a1,b2,a2,b3,a3);
     end
 
   end
