@@ -66,9 +66,9 @@ classdef Mixer < handle
           audio = A.step * (1 - this.abBalance) + B.step * this.abBalance;
           % apply equalizer if necessary
           if (this.eqEnabled)
-            audio = (this.eqGain(1) .* filter(this.eq.filters.bass.b, this.eq.filters.bass.a, audio))...
-              + (this.eqGain(2) .* filter(this.eq.filters.mid.b, this.eq.filters.mid.a, audio))...
-              + (this.eqGain(3) .* filter(this.eq.filters.treble.b, this.eq.filters.treble.a, audio));
+            audio = this.eqGain(1) .* step(this.eq.filters.bass, audio)...
+              + this.eqGain(2) .* step(this.eq.filters.mid, audio)...
+              + this.eqGain(3) .* step(this.eq.filters.treble, audio);
           end
           this.ap.step(audio);
 
@@ -98,12 +98,10 @@ classdef Mixer < handle
 
     function setEqGain(this, param, gain)
       this.eqGain(param) = gain;
-      disp(this.eqGain);
     end
 
     function setEqEnable(this, enabled)
       this.eqEnabled = enabled;
-      disp(this.eqEnabled);
     end
 
     function release(this)

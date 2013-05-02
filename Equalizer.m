@@ -39,8 +39,9 @@ classdef Equalizer < handle
       Rp = 5;       % Ripple for pass band (~5 dB recommended for < 300Hz)
       Rs = 90;      % Attenuation for stop band
       [b,a] = ellip(n, Rp, Rs, this.Bc/this.Ns);
-      out.b = b;
-      out.a = a;
+      out = dsp.IIRFilter(...
+        'Numerator', b,...
+        'Denominator', a);
     end
 
     % Use Chebyshev filter for mids using Park-McClennan
@@ -59,9 +60,8 @@ classdef Equalizer < handle
 
       % compute filter params
       [n,fo,ao,w] = firpmord(f,A,dev);
-      b = firpm(n,fo,ao,w);
-      out.b = b;
-      out.a = 1;
+      out = dsp.FIRFilter(...
+        'Numerator', firpm(n,fo,ao,w));
     end
 
     % Use elliptic high pass filter for treble eq
@@ -70,8 +70,9 @@ classdef Equalizer < handle
       Rp = 2;       % Ripple for pass band (~2 dB recommended for > 300Hz)
       Rs = 90;      % Attenuation for stop band
       [b,a] = ellip(n, Rp, Rs, this.Tc/this.Ns, 'high');
-      out.b = b;
-      out.a = a;
+      out = dsp.IIRFilter(...
+        'Numerator', b,...
+        'Denominator', a);
     end
 
     % don't actually use this (it's slow)
