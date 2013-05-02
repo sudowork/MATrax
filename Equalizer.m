@@ -16,6 +16,14 @@ classdef Equalizer < handle
       a = 2^(1/12); % twelfth root of 2 (e.g. half steps in an octave)
       f = f0 * a^n; % move n-relative half steps
     end
+
+    function filt = makeFIR(b)
+      filt = dsp.FIRFilter('Numerator', b);
+    end
+
+    function filt = makeIIR(b, a)
+      filt = dsp.IIRFilter('Numerator', b, 'Denominator', a);
+    end
   end
 
   methods
@@ -23,9 +31,11 @@ classdef Equalizer < handle
       obj.setSamplingRate(Fs);
       obj.Bc = Bc;
       obj.Tc = Tc;
-      obj.filters.bass = obj.getBassEq();
-      obj.filters.mid = obj.getMidEq();
-      obj.filters.treble = obj.getTrebleEq();
+      [bb,ba] = obj.getBassEq();
+      [tb,ta] = obj.getTrebleEq();
+      obj.filters.bass = Equalizer.makeIIR(bb,ba);
+      obj.filters.mid = Equalizer.makeFIR(obj.getMidEq());
+      obj.filters.treble = Equalizer.makeIIR(tb,ta);
     end
 
     function setSamplingRate(this, Fs)
@@ -34,18 +44,15 @@ classdef Equalizer < handle
     end
 
     % Use elliptic filter for low-pass (sharpest cutoff)
-    function out = getBassEq(this)
+    function [b,a] = getBassEq(this)
       n = 5;        % Order
       Rp = 5;       % Ripple for pass band (~5 dB recommended for < 300Hz)
       Rs = 90;      % Attenuation for stop band
       [b,a] = ellip(n, Rp, Rs, this.Bc/this.Ns);
-      out = dsp.IIRFilter(...
-        'Numerator', b,...
-        'Denominator', a);
     end
 
     % Use Chebyshev filter for mids using Park-McClennan
-    function out = getMidEq(this)
+    function b = getMidEq(this)
       t = 100;  % transition window size (equiripple to prevent blow up)
       Fs1 = this.Bc - t;
       Fp1 = this.Bc + t;
@@ -60,19 +67,15 @@ classdef Equalizer < handle
 
       % compute filter params
       [n,fo,ao,w] = firpmord(f,A,dev);
-      out = dsp.FIRFilter(...
-        'Numerator', firpm(n,fo,ao,w));
+      b = firpm(n,fo,ao,w);
     end
 
     % Use elliptic high pass filter for treble eq
-    function out = getTrebleEq(this)
+    function [b,a] = getTrebleEq(this)
       n = 10;       % Order
       Rp = 2;       % Ripple for pass band (~2 dB recommended for > 300Hz)
       Rs = 90;      % Attenuation for stop band
       [b,a] = ellip(n, Rp, Rs, this.Tc/this.Ns, 'high');
-      out = dsp.IIRFilter(...
-        'Numerator', b,...
-        'Denominator', a);
     end
 
     % don't actually use this (it's slow)
