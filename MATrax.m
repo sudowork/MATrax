@@ -229,7 +229,6 @@ classdef MATrax < handle
       % Add path if not stand-alone
       if ~isdeployed
         addpath(fullfile(pwd, 'lib'));
-        addpath(fullfile(pwd, 'util'));
       end
 
       % Create new MATraxEngine
