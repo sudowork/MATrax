@@ -38,6 +38,7 @@ classdef MATrax < handle
                    'MenuBar', 'none',...
                    'Toolbar', 'none',...
                    'Position', [0 0 MATrax.GUI_WIDTH MATrax.GUI_HEIGHT],...
+                   'Renderer', 'painters',...
                    'Visible', 'off');
       set(this.f, 'CloseRequestFcn', {@(src, event) this.destructor()});
       movegui(this.f, 'center');
@@ -186,7 +187,7 @@ classdef MATrax < handle
         for i = 1:length(songs)
           s = songs(i);
           caSongs = struct2cell(s);
-          songData(i,:) = {caSongs{1:numCols}};
+          songData(i,:) = caSongs(1:numCols);
         end
         set(songlib, 'Data', songData);
       end
