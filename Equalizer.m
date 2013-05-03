@@ -16,14 +16,6 @@ classdef Equalizer < handle
       a = 2^(1/12); % twelfth root of 2 (e.g. half steps in an octave)
       f = f0 * a^n; % move n-relative half steps
     end
-
-    function filt = makeFIR(b)
-      filt = dsp.FIRFilter('Numerator', b);
-    end
-
-    function filt = makeIIR(b, a)
-      filt = dsp.IIRFilter('Numerator', b, 'Denominator', a);
-    end
   end
 
   methods
@@ -33,9 +25,9 @@ classdef Equalizer < handle
       obj.Tc = Tc;
       [bb,ba] = obj.getBassEq();
       [tb,ta] = obj.getTrebleEq();
-      obj.filters.bass = Equalizer.makeIIR(bb,ba);
-      obj.filters.mid = Equalizer.makeFIR(obj.getMidEq());
-      obj.filters.treble = Equalizer.makeIIR(tb,ta);
+      obj.filters.bass = Filter.makeIIR(bb,ba);
+      obj.filters.mid = Filter.makeFIR(obj.getMidEq());
+      obj.filters.treble = Filter.makeIIR(tb,ta);
     end
 
     function setSamplingRate(this, Fs)
@@ -79,18 +71,18 @@ classdef Equalizer < handle
     end
 
     % don't actually use this (it's slow)
-    % function [b,a] = getMidKaiserEq(this)
-    %   Wp = Equalizer.shiftHalfSteps(this.Bc, 3);  % pass cutoff freq
-    %   Ws = Equalizer.shiftHalfSteps(this.Tc, -3); % stop cutoff freq
-    %   f = [this.Bc Wp Ws this.Tc] / this.Ns;      % Cutoff frequencies
-    %   A = [0 1 0];        % Desired amplitudes
-    %   % Compute deviations
-    %   dev = [0.001 .05 0.001];  % ripple of 5%, attenuation of -60 dB
-    %   [M,Wn,beta,typ] = kaiserord(f,A,dev);
+    function [b,a] = getMidKaiserEq(this)
+      Wp = Equalizer.shiftHalfSteps(this.Bc, 3);  % pass cutoff freq
+      Ws = Equalizer.shiftHalfSteps(this.Tc, -3); % stop cutoff freq
+      f = [this.Bc Wp Ws this.Tc] / this.Ns;      % Cutoff frequencies
+      A = [0 1 0];        % Desired amplitudes
+      % Compute deviations
+      dev = [0.001 .05 0.001];  % ripple of 5%, attenuation of -60 dB
+      [M,Wn,beta,typ] = kaiserord(f,A,dev);
 
-    %   b = fir1(M,Wn,typ,kaiser(M+1,beta),'noscale');
-    %   a = 1;
-    % end
+      b = fir1(M,Wn,typ,kaiser(M+1,beta),'noscale');
+      a = 1;
+    end
 
     % not used by MATrax; only for reporting purposes
     function freqz(this)
