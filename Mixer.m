@@ -104,6 +104,10 @@ classdef Mixer < handle
       this.eqEnabled = enabled;
     end
 
+    function setReverbEnable(this, deck, enabled)
+      this.(['ar' deck]).setReverbEnable(enabled);
+    end
+
     function release(this)
       this.ap.release;
     end

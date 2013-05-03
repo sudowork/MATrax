@@ -105,6 +105,10 @@ classdef MATraxEngine < handle
     function setEqEnable(this, enabled)
       this.mixer.setEqEnable(enabled);
     end
+
+    function setReverbEnable(this, deck, enabled)
+      this.mixer.setReverbEnable(deck, enabled);
+    end
   end
 
   methods (Static)

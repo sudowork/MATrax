@@ -112,9 +112,11 @@ classdef MATrax < handle
       ctlMid = c('ctlMid');
       ctlB = c('ctlB');
       deckA.toggle = uicontrol('parent', ctlA, 'Style', 'togglebutton', 'string', 'Play/Pause A', 'Position', [0 0 60 20]);
+      deckA.reverb = uicontrol('parent', ctlA, 'Style', 'togglebutton', 'string', 'Reverb', 'Position', [0 0 60 20]);
       deckA.load = uicontrol('parent', ctlA, 'string', 'Move to Deck A', 'Position', [0 0 60 20], 'UserData', 'A');
       this.comps('crossfader') = uicontrol('parent', ctlMid, 'Style', 'slider', 'Min', 0, 'Max', 1, 'Value', 0.5);
       deckB.load = uicontrol('parent', ctlB, 'string', 'Move to Deck B', 'Position', [0 0 60 20], 'UserData', 'B');
+      deckB.reverb = uicontrol('parent', ctlB, 'Style', 'togglebutton', 'string', 'Reverb', 'Position', [0 0 60 20]);
       deckB.toggle = uicontrol('parent', ctlB, 'Style', 'togglebutton', 'string', 'Play/Pause B', 'Position', [0 0 60 20]);
 
       % bot (library))
@@ -145,6 +147,8 @@ classdef MATrax < handle
       deckB = c('deckB');
       set(deckA.toggle, 'Callback', {@(src,~) this.eng.toggleDeck('A', get(src, 'Value'))})
       set(deckB.toggle, 'Callback', {@(src,~) this.eng.toggleDeck('B', get(src, 'Value'))})
+      set(deckA.reverb, 'Callback', {@(src,~) this.eng.setReverbEnable('A', get(src, 'Value'))})
+      set(deckB.reverb, 'Callback', {@(src,~) this.eng.setReverbEnable('B', get(src, 'Value'))})
       set(deckA.load, 'Callback', {@(src,~) this.loadDeck(src); });
       set(deckB.load, 'Callback', {@(src,~) this.loadDeck(src); });
       addlistener(c('crossfader'), 'Value', 'PostSet', @(~,event) this.eng.crossfade(event.newValue));

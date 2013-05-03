@@ -7,6 +7,10 @@ classdef Deck < handle
     callback
     latency
     isPlaying = false
+    reverbEnabled = false
+
+    % filters
+    reverb
 
     % derived
     channels = 2
@@ -20,6 +24,8 @@ classdef Deck < handle
       if (nargin > 0)
         obj.loadDeck(varargin{1});
       end
+      % target reverb of 50 ms delay
+      obj.reverb = Reverberator(MATrax.AUD_SAMPLE_RATE, 50, .7);
     end
 
     function delete(this)
@@ -30,10 +36,11 @@ classdef Deck < handle
     function audio = step(this)
       if this.isPlaying && isobject(this.ar) && ~this.ar.isDone
         % get initial audio and apply effects
-        tempAudio = this.ar.step;
-        tempAudio = tempAudio .* this.gain;
-
-        audio = tempAudio;
+        audio = this.ar.step;
+        if this.reverbEnabled
+          audio = this.reverb.step(audio);
+        end
+        audio = audio .* this.gain;
 
         % advance current sample
         this.currentSample = this.currentSample + MATrax.AUD_FRAME_SIZE;
@@ -93,6 +100,10 @@ classdef Deck < handle
     %% Effects tuning
     function setGain(this, val)
       this.gain = val;
+    end
+
+    function setReverbEnable(this, enabled)
+      this.reverbEnabled = enabled;
     end
   end
 end
