@@ -13,10 +13,10 @@ classdef MATrax < handle
     GUI_WIDTH = 800;
     GUI_HEIGHT = 600;
     GUI_EQ_NAME = 'Equalizer';
-    GUI_EQ_WIDTH = 400;
-    GUI_EQ_HEIGHT = 300;
+    GUI_EQ_WIDTH = 250;
+    GUI_EQ_HEIGHT = 200;
     % audio/playback properties
-    AUD_QUEUE_DUR = 0.3;
+    AUD_QUEUE_DUR = 0.1;
     AUD_FRAME_SIZE = 2048;
     AUD_SAMPLE_RATE = 44.1e3;
   end
