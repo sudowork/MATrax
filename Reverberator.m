@@ -27,7 +27,7 @@ classdef Reverberator < matlab.System
       y = zeros(size(x));
       % parallel combs
       for i=1:this.numCombs
-        y = y + this.g .* step(this.combs{i}, x);
+        y = y + this.g^i .* step(this.combs{i}, x);
       end
     end
   end
