@@ -87,9 +87,9 @@ classdef Equalizer < handle
     % not used by MATrax; only for reporting purposes
     function freqz(this)
       [b1,a1] = this.getBassEq();
-      [b2,a2] = this.getMidEq();
+      b2 = this.getMidEq();
       [b3,a3] = this.getTrebleEq();
-      fvtool(b1,a1,b2,a2,b3,a3);
+      fvtool(b1,a1,b2,1,b3,a3);
     end
 
   end
