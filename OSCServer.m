@@ -36,14 +36,14 @@ classdef OSCServer < handle
       this.port = port;
       this.running = false;
       this.pollQ = timer(...
-                         'ExecutionMode', 'fixedRate',...
-                         'Period', .1,...
+                         'ExecutionMode', 'fixedSpacing',...
+                         'Period', .5,...
                          'TimerFcn', @(~,~) this.checkMessages());
     end
 
     function start(this)
       % set IP and running status
-      this.ip = this.getLocalIP()
+      this.ip = this.getLocalIP();
       this.running = true;
       % start OSC server on port
       this.server = osc_new_server(this.port);
